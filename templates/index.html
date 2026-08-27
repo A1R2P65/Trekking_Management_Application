@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="p-5 mb-4 bg-light rounded-3 mt-4 border shadow-sm">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold text-success"><i class="bi bi-tree-fill me-2"></i>Trekking Management System</h1>
+        <p class="col-md-8 fs-4">Welcome to the Trekking Management Application. Plan and organize your treks, manage certified guides, and book adventures easily.</p>
+        <hr class="my-4">
+        {% if not session.get('user_id') %}
+            <p>Please log in or register to get started.</p>
+            <a class="btn btn-success btn-lg px-4" href="{{ url_for('login') }}" role="button"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
+            <a class="btn btn-outline-secondary btn-lg ms-2 px-4" href="{{ url_for('register') }}" role="button"><i class="bi bi-pencil-square me-1"></i>Register</a>
+        {% else %}
+            <p>Access your dashboard using the navigation bar.</p>
+            {% if session.get('role') == 'admin' %}
+                <a class="btn btn-success btn-lg" href="{{ url_for('admin_dashboard') }}" role="button"><i class="bi bi-speedometer2 me-1"></i>Go to Admin Dashboard</a>
+            {% elif session.get('role') == 'trek_staff' %}
+                <a class="btn btn-success btn-lg" href="{{ url_for('staff_dashboard') }}" role="button"><i class="bi bi-speedometer2 me-1"></i>Go to Staff Dashboard</a>
+            {% else %}
+                <a class="btn btn-success btn-lg" href="{{ url_for('trekker_dashboard') }}" role="button"><i class="bi bi-speedometer2 me-1"></i>Go to Trekker Dashboard</a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-sm-4">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+            <div class="card-body text-center p-4">
+                <div class="feature-icon bg-success text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center" style="width: 3rem; height: 3rem; font-size: 1.5rem;">
+                    <i class="bi bi-calendar2-event-fill"></i>
+                </div>
+                <h5 class="fw-bold">Trek Scheduling</h5>
+                <p class="text-muted small mb-0">Easily create and coordinate upcoming treks with detailed locations, difficulty settings, and timelines.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+            <div class="card-body text-center p-4">
+                <div class="feature-icon bg-success text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center" style="width: 3rem; height: 3rem; font-size: 1.5rem;">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <h5 class="fw-bold">Certified Guides</h5>
+                <p class="text-muted small mb-0">Manage certified trek staff guides and assign them to specific trekking routes with direct status tracking.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+            <div class="card-body text-center p-4">
+                <div class="feature-icon bg-success text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center" style="width: 3rem; height: 3rem; font-size: 1.5rem;">
+                    <i class="bi bi-ticket-detailed-fill"></i>
+                </div>
+                <h5 class="fw-bold">Direct Bookings</h5>
+                <p class="text-muted small mb-0">Participants can search, filter by difficulty, and securely reserve slots for their desired adventures.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

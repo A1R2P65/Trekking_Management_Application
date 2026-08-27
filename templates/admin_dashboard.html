@@ -1,0 +1,507 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-4 mt-2">
+    <h2 class="fw-bold text-success mb-0"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h2>
+    <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-shield-check me-1"></i>Administrator Mode</span>
+</div>
+
+<!-- stats -->
+<div class="row g-3">
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-primary text-white p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-white-50 text-uppercase fw-bold small">Total Trekkers</h6>
+                    <h2 class="fw-bold mb-0 mt-1">{{total_trekkers}}</h2>
+                </div>
+                <div class="fs-1 text-white-50">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-success text-white p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-white-50 text-uppercase fw-bold small">Total Staff</h6>
+                    <h2 class="fw-bold mb-0 mt-1">{{total_staff}}</h2>
+                </div>
+                <div class="fs-1 text-white-50">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-warning text-dark p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-dark-50 text-uppercase fw-bold small">Total Treks</h6>
+                    <h2 class="fw-bold mb-0 mt-1">{{total_treks}}</h2>
+                </div>
+                <div class="fs-1 text-dark-50">
+                    <i class="bi bi-map-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-danger text-white p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-white-50 text-uppercase fw-bold small">Total Bookings</h6>
+                    <h2 class="fw-bold mb-0 mt-1">{{total_bookings}}</h2>
+                </div>
+                <div class="fs-1 text-white-50">
+                    <i class="bi bi-journal-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- statistics visualization -->
+<div class="card border-0 shadow-sm rounded-3 mt-4">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="card-title fw-bold text-success mb-0"><i class="bi bi-bar-chart-line-fill me-2"></i>Trekking Statistics Visualization</h5>
+    </div>
+    <div class="card-body text-center">
+        <div class="p-2 bg-light rounded border d-inline-block">
+            <img src="{{ url_for('static', filename='trek_stats.png') }}" class="img-fluid rounded" alt="Trekking Statistics Chart" style="max-height: 380px;">
+        </div>
+    </div>
+</div>
+
+
+<!-- pending staff approvals -->
+<div class="card border-0 shadow-sm rounded-3 mt-4">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="card-title fw-bold text-success mb-0"><i class="bi bi-hourglass-split me-2"></i>Pending Staff Approvals</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Name</th>
+                        <th>Email</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in pending_staff %}
+                    <tr>
+                        <td class="ps-4 fw-semibold">{{c.name}}</td>
+                        <td>{{c.email}}</td>
+                        <td class="pe-4 text-end">
+                            <form method="POST" action="{{url_for('approve_staff', staff_id=c.id)}}" class="d-inline">
+                                <button class="btn btn-sm btn-success me-1"><i class="bi bi-check-circle me-1"></i>Approve</button>
+                            </form>
+                            <form method="POST" action="{{url_for('blacklist_staff', staff_id=c.id)}}" class="d-inline">
+                                <button class="btn btn-sm btn-danger"><i class="bi bi-slash-circle me-1"></i>Blacklist</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-4">No pending approvals</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- search -->
+<div class="card border-0 shadow-sm rounded-3 mt-4">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="card-title fw-bold text-success mb-0"><i class="bi bi-search me-2"></i>User Directory Search</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="d-flex mb-3" style="max-width:500px;">
+            <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control" placeholder="Search by name or email" value="{{search_query or ''}}">
+                <button class="btn btn-success px-4">Search</button>
+            </div>
+        </form>
+        
+        {% if search_query %}
+        <p class="text-muted">Results for "{{ search_query }}"</p>
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Role / Type</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in search_results_trekker %}
+                    <tr>
+                        <td><span class="badge bg-info text-dark"><i class="bi bi-person me-1"></i>Trekker</span></td>
+                        <td class="fw-semibold">{{ s.name }}</td>
+                        <td>{{ s.email }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for c in search_results_staff %}
+                    <tr>
+                        <td><span class="badge bg-success"><i class="bi bi-person-badge me-1"></i>Staff</span></td>
+                        <td class="fw-semibold">{{ c.name }}</td>
+                        <td>{{ c.email }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not search_results_trekker and not search_results_staff %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-3">No matches found</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- all trekkers -->
+<div class="card border-0 shadow-sm rounded-3 mt-4">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="card-title fw-bold text-success mb-0"><i class="bi bi-people-fill me-2"></i>All Trekkers</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Name</th>
+                        <th>Email</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in all_trekkers %}
+                    <tr>
+                        <td class="ps-4 fw-semibold">
+                            {% if s.is_blacklisted %}
+                                <span class="text-danger text-decoration-line-through">{{s.name}}</span>
+                                <span class="badge bg-danger ms-2"><i class="bi bi-slash-circle me-1"></i>Blacklisted</span>
+                            {% else %}
+                                {{s.name}}
+                            {% endif %}
+                        </td>
+                        <td>{{s.email}}</td>
+                        <td class="pe-4 text-end">
+                            <form method="POST" action="{{url_for('blacklist_trekker', trekker_id=s.id)}}" class="d-inline">
+                                <button class="btn btn-sm {{'btn-outline-success' if s.is_blacklisted else 'btn-outline-danger'}} fw-semibold px-3">
+                                    {% if s.is_blacklisted %}
+                                        <i class="bi bi-check-circle me-1"></i>Reinstate
+                                    {% else %}
+                                        <i class="bi bi-slash-circle me-1"></i>Blacklist
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-4">No trekkers registered</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- all staff -->
+<div class="card border-0 shadow-sm rounded-3 mt-4">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="card-title fw-bold text-success mb-0"><i class="bi bi-person-badge-fill me-2"></i>All Staff Guides</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Name</th>
+                        <th>Email</th>
+                        <th>Contact</th>
+                        <th>Status</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in all_staff %}
+                    <tr>
+                        <td class="ps-4 fw-semibold">{{s.name}}</td>
+                        <td>{{s.email}}</td>
+                        <td>{{s.phone or s.contact or 'N/A'}}</td>
+                        <td>
+                            <span class="badge {{'bg-danger' if s.status == 'Blacklisted' else ('bg-success' if s.status == 'Approved' else 'bg-warning text-dark')}}">
+                                {{s.status}}
+                            </span>
+                        </td>
+                        <td class="pe-4 text-end">
+                            <form method="POST" action="{{url_for('blacklist_staff', staff_id=s.id)}}" class="d-inline">
+                                <button class="btn btn-sm {{'btn-outline-success' if s.status == 'Blacklisted' else 'btn-outline-danger'}} fw-semibold px-3">
+                                    {% if s.status == 'Blacklisted' %}
+                                        <i class="bi bi-check-circle me-1"></i>Reinstate
+                                    {% else %}
+                                        <i class="bi bi-slash-circle me-1"></i>Blacklist
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No staff registered</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- all treks -->
+<div class="card border-0 shadow-sm rounded-3 mt-4">
+    <div class="card-header bg-white border-0 py-3 d-flex align-items-center justify-content-between">
+        <h5 class="card-title fw-bold text-success mb-0"><i class="bi bi-map-fill me-2"></i>All Treks</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Trek Name</th>
+                        <th>Location</th>
+                        <th>Difficulty</th>
+                        <th>Duration</th>
+                        <th>Slots Left</th>
+                        <th>Dates</th>
+                        <th>Assigned Guide</th>
+                        <th>Status</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in all_treks %}
+                    <tr>
+                        <td class="ps-4 fw-semibold">{{s.name}}</td>
+                        <td>{{s.location}}</td>
+                        <td>
+                            <span class="badge {{'bg-info text-dark' if s.difficulty == 'Easy' else ('bg-warning text-dark' if s.difficulty == 'Moderate' else 'bg-danger')}}">
+                                {{s.difficulty}}
+                            </span>
+                        </td>
+                        <td>{{s.duration}} days</td>
+                        <td class="fw-bold">{{s.available_slots}}</td>
+                        <td class="small">{{s.start_date}} to {{s.end_date}}</td>
+                        <td>
+                            <span class="fw-semibold text-secondary">{{s.staff.name if s.staff else 'None'}}</span>
+                        </td>
+                        <td>
+                            <span class="badge {{'bg-success' if s.status == 'Open' else ('bg-secondary' if s.status == 'Closed' else ('bg-primary' if s.status == 'Completed' else 'bg-warning text-dark'))}}">
+                                {{s.status}}
+                            </span>
+                        </td>
+                        <td class="pe-4 text-end" style="min-width: 250px;">
+                            <!-- Assign Staff -->
+                            <form method="POST" action="{{url_for('admin_assign_staff', trek_id=s.id)}}" class="d-inline-block me-1">
+                                <div class="input-group input-group-sm" style="width: 180px;">
+                                    <select name="staff_id" class="form-select form-select-sm" required>
+                                        <option value="" disabled selected>Assign guide...</option>
+                                        {% for staff in all_staff %}
+                                            {% if staff.status == 'Approved' %}
+                                            <option value="{{staff.id}}" {{ 'selected' if s.staff_id == staff.id }}>{{staff.name}}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <button class="btn btn-sm btn-success"><i class="bi bi-check"></i></button>
+                                </div>
+                            </form>
+
+                            <!-- Edit Trek Trigger -->
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editTrekModal{{s.id}}"><i class="bi bi-pencil"></i></button>
+
+                            <!-- Edit Trek Modal -->
+                            <div class="modal fade" id="editTrekModal{{s.id}}" tabindex="-1" aria-labelledby="editTrekModalLabel{{s.id}}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{{url_for('admin_edit_trek', trek_id=s.id)}}">
+                                            <div class="modal-header bg-success text-white">
+                                                <h5 class="modal-title fw-bold" id="editTrekModalLabel{{s.id}}"><i class="bi bi-pencil-square me-2"></i>Edit Trek: {{s.name}}</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Trek Name</label>
+                                                    <input type="text" name="name" class="form-control" value="{{s.name}}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Location</label>
+                                                    <input type="text" name="location" class="form-control" value="{{s.location}}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Difficulty</label>
+                                                    <select name="difficulty" class="form-select" required>
+                                                        <option value="Easy" {{ 'selected' if s.difficulty == 'Easy' }}>Easy</option>
+                                                        <option value="Moderate" {{ 'selected' if s.difficulty == 'Moderate' }}>Moderate</option>
+                                                        <option value="Hard" {{ 'selected' if s.difficulty == 'Hard' }}>Hard</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Duration (days)</label>
+                                                    <input type="number" name="duration" class="form-control" value="{{s.duration}}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Available Slots</label>
+                                                    <input type="number" name="available_slots" class="form-control" value="{{s.available_slots}}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Status</label>
+                                                    <select name="status" class="form-select" required>
+                                                        <option value="Pending" {{ 'selected' if s.status == 'Pending' }}>Pending</option>
+                                                        <option value="Approved" {{ 'selected' if s.status == 'Approved' }}>Approved</option>
+                                                        <option value="Open" {{ 'selected' if s.status == 'Open' }}>Open</option>
+                                                        <option value="Closed" {{ 'selected' if s.status == 'Closed' }}>Closed</option>
+                                                        <option value="Completed" {{ 'selected' if s.status == 'Completed' }}>Completed</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Start Date</label>
+                                                    <input type="date" name="start_date" class="form-control" value="{{s.start_date}}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">End Date</label>
+                                                    <input type="date" name="end_date" class="form-control" value="{{s.end_date}}" required>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" class="btn btn-success"><i class="bi bi-save me-1"></i>Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delete Trek -->
+                            <form method="POST" action="{{url_for('admin_delete_trek', trek_id=s.id)}}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this trek?');">
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">No treks registered</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- add trek -->
+<div class="card border-0 shadow-sm rounded-3 mt-4">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="card-title fw-bold text-success mb-0"><i class="bi bi-plus-circle-fill me-2"></i>Add New Trek Route</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{url_for('admin_add_trek')}}">
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <label class="form-label fw-semibold">Trek Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="E.g., Annapurna Circuit" required>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label fw-semibold">Location / Region</label>
+                    <input type="text" name="location" class="form-control" placeholder="E.g., Nepal Himalayas" required>
+                </div>
+                <div class="col-sm-4">
+                    <label class="form-label fw-semibold">Difficulty Level</label>
+                    <select name="difficulty" class="form-select" required>
+                        <option value="" disabled selected>Select level...</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+                <div class="col-sm-4">
+                    <label class="form-label fw-semibold">Duration (Days)</label>
+                    <input type="number" name="duration" class="form-control" placeholder="E.g., 5" required>
+                </div>
+                <div class="col-sm-4">
+                    <label class="form-label fw-semibold">Available Slots</label>
+                    <input type="number" name="available_slots" class="form-control" placeholder="E.g., 15" required>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label fw-semibold">Start Date</label>
+                    <input type="date" name="start_date" class="form-control" required>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label fw-semibold">End Date</label>
+                    <input type="date" name="end_date" class="form-control" required>
+                </div>
+                <div class="col-12 mt-4">
+                    <button class="btn btn-success px-4 py-2 fw-semibold shadow-sm"><i class="bi bi-plus-lg me-1"></i>Add Trek</button>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- all bookings -->
+<div class="card border-0 shadow-sm rounded-3 mt-4 mb-5">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="card-title fw-bold text-success mb-0"><i class="bi bi-receipt-cutoff me-2"></i>All Bookings Overview</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Booking ID</th>
+                        <th>Trekker Detail</th>
+                        <th>Trek Name</th>
+                        <th>Booking Date</th>
+                        <th class="pe-4 text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in all_bookings %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-secondary">#{{ b.id }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ b.user.name }}</div>
+                            <div class="small text-muted">{{ b.user.email }}</div>
+                        </td>
+                        <td class="fw-semibold">{{ b.trek.name }}</td>
+                        <td class="small">{{ b.booking_date.strftime('%Y-%m-%d %H:%M') if b.booking_date else 'N/A' }}</td>
+                        <td class="pe-4 text-end">
+                            <span class="badge {{ 'bg-success' if b.status == 'Booked' else ('bg-secondary' if b.status == 'Completed' else 'bg-danger') }} px-3 py-1.5">
+                                {{ b.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No bookings recorded in the system.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
