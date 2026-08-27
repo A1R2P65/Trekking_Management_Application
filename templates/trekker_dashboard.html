@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Trekker Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-4 mt-2">
+    <h2 class="fw-bold text-success mb-0"><i class="bi bi-speedometer me-2"></i>Trekker Dashboard</h2>
+    <div class="text-end">
+        <h5 class="mb-0 fw-bold">{{ user.name }}</h5>
+        <span class="badge bg-success"><i class="bi bi-person-fill me-1"></i>Member</span>
+    </div>
+</div>
+
+{% if user.is_blacklisted %}
+<div class="alert alert-danger shadow-sm d-flex align-items-center mb-4" role="alert">
+    <i class="bi bi-slash-circle-fill fs-4 me-3"></i>
+    <div>
+        <h6 class="alert-heading fw-bold mb-1">Account Blacklisted</h6>
+        Your participant account has been blacklisted by an administrator. You will not be able to book any new treks.
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4 mt-2">
+    <!-- Left Column: Profile Settings & Filters -->
+    <div class="col-md-4">
+        <h4 class="section-title mb-3"><i class="bi bi-person-gear me-2"></i>Profile Settings</h4>
+        <div class="card border-0 shadow-sm rounded-3 p-3 mb-4">
+            <form method="POST" action="{{ url_for('trekker_profile') }}">
+                <div class="mb-3">
+                    <label for="name" class="form-label fw-semibold">Full Name</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label fw-semibold">Email Address</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                        <input type="email" class="form-control" id="email" value="{{ user.email }}" readonly disabled>
+                    </div>
+                    <div class="form-text small">Email address cannot be changed.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label fw-semibold">Change Password</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Leave blank to keep current">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-sm btn-success w-100 fw-semibold"><i class="bi bi-check2-circle me-1"></i>Update Profile</button>
+            </form>
+        </div>
+
+        <h4 class="section-title mb-3"><i class="bi bi-funnel me-2"></i>Filter Treks</h4>
+        <div class="card border-0 shadow-sm rounded-3 p-3 mb-4">
+            <form method="GET" action="{{ url_for('trekker_dashboard') }}">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Search Routes</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="E.g., Annapurna" value="{{ search or '' }}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Difficulty Level</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="bi bi-bar-chart"></i></span>
+                        <select name="difficulty" class="form-select">
+                            <option value="">Any Difficulty</option>
+                            <option value="Easy" {{ 'selected' if difficulty == 'Easy' }}>Easy</option>
+                            <option value="Moderate" {{ 'selected' if difficulty == 'Moderate' }}>Moderate</option>
+                            <option value="Hard" {{ 'selected' if difficulty == 'Hard' }}>Hard</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-sm btn-success w-100 fw-semibold"><i class="bi bi-filter me-1"></i>Apply Filters</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Column: My Bookings & Available Treks -->
+    <div class="col-md-8">
+        <h4 class="section-title mb-3"><i class="bi bi-journal-bookmark me-2"></i>My Bookings</h4>
+        {% for b in my_bookings %}
+        <div class="card border-0 shadow-sm rounded-3 p-3 mb-3 bg-white border-start border-success border-3">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="fw-bold text-success mb-1">{{ b.trek.name }}</h5>
+                    <div class="small text-muted mb-1">
+                        <span class="me-3"><i class="bi bi-geo-alt me-1"></i>{{ b.trek.location }}</span>
+                        <span><i class="bi bi-calendar-check me-1"></i>{{ b.trek.start_date }} to {{ b.trek.end_date }}</span>
+                    </div>
+                    <p class="text-muted small mb-0"><i class="bi bi-clock-history me-1"></i>Booked on: {{ b.booking_date.strftime('%Y-%m-%d %H:%M') if b.booking_date else 'N/A' }}</p>
+                </div>
+                <div>
+                    <span class="badge {{ 'bg-success' if b.status == 'Booked' else ('bg-secondary' if b.status == 'Completed' else 'bg-danger') }} px-3 py-1.5 rounded-pill">
+                        {{ b.status }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card border-0 p-4 text-center bg-white shadow-sm rounded-3 mb-4">
+            <i class="bi bi-journal-x display-4 text-muted mb-2"></i>
+            <p class="text-muted mb-0">You have no active bookings.</p>
+        </div>
+        {% endfor %}
+
+        <h4 class="section-title mt-4 mb-3"><i class="bi bi-compass me-2"></i>Available Treks</h4>
+        {% for t in open_treks %}
+        <div class="card border-0 shadow-sm rounded-3 p-4 mb-3 bg-white">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                <div>
+                    <h5 class="fw-bold text-success mb-2">{{ t.name }}</h5>
+                    <div class="d-flex flex-wrap gap-x-3 text-muted mb-2 small">
+                        <span class="me-3"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ t.location }}</span>
+                        <span class="me-3"><i class="bi bi-bar-chart-fill text-warning me-1"></i>{{ t.difficulty }}</span>
+                        <span class="me-3"><i class="bi bi-clock me-1"></i>{{ t.duration }} Days</span>
+                    </div>
+                    <div class="text-muted small">
+                        <span class="me-3"><i class="bi bi-calendar-range me-1"></i>Dates: {{ t.start_date }} to {{ t.end_date }}</span>
+                        <span><i class="bi bi-ticket-perforated me-1"></i>Slots Available: <strong>{{ t.available_slots }}</strong></span>
+                    </div>
+                </div>
+                <div>
+                    {% set booked = false %}
+                    {% for b in my_bookings %}
+                        {% if b.trek_id == t.id and b.status == 'Booked' %}
+                            {% set booked = true %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if booked %}
+                        <button class="btn btn-sm btn-secondary px-4 fw-semibold" disabled><i class="bi bi-check-circle me-1"></i>Booked</button>
+                    {% elif t.available_slots <= 0 %}
+                        <button class="btn btn-sm btn-outline-danger px-4 fw-semibold" disabled><i class="bi bi-slash-circle me-1"></i>Full</button>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('trekker_book_trek', trek_id=t.id) }}">
+                            <button type="submit" class="btn btn-sm btn-success px-4 fw-semibold shadow-sm"><i class="bi bi-cart-plus me-1"></i>Book Now</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card border-0 p-4 text-center bg-white shadow-sm rounded-3">
+            <i class="bi bi-info-circle display-4 text-muted mb-2"></i>
+            <p class="text-muted mb-0">No open treks found matching the filters.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
